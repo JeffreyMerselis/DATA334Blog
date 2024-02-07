@@ -3,3 +3,20 @@ title: "Blog Post 1"
 author: "Jeffrey Merselis"
 date: "2024-2-9"
 ---
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+tuesdata <- tidytuesdayR::tt_load('2024-01-30')
+
+groundhogs <- tuesdata$groundhogs
+predictions <- tuesdata$predictions
+```
+
+```{r}
+groundhogs
+predictions
+```
+

@@ -11,7 +11,7 @@
     "href": "posts/test/index.html",
     "title": "Test Post",
     "section": "",
-    "text": "library(palmerpenguins)\nlibrary(tidyverse)\n\nggplot(data = penguins, aes(x = bill_length_mm)) +\n  geom_histogram()"
+    "text": "library(palmerpenguins)\nlibrary(tidyverse)\n\nggplot(data = penguins, aes(x = bill_length_mm)) +\n  geom_histogram() +\n  theme_minimal()"
   },
   {
     "objectID": "posts/welcome/index.html",

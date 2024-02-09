@@ -8,20 +8,28 @@ toc: true
 
 # Introduction
 
-The datasets I will be looking at contain data on groundhogs day groundhogs and their predictions of whether winter will come or not. In the predictions df there is 1400+ entries of id (groundhog id), year, shadow (T or F), and details. Details is any extra writen info that could add context to the sighting of the shadow. The groudhogs df has 75 entries with the groundhogs ids, information on the groundhogs, and information on the city/region where the groundhog is "from". I'll be making some plots to look compare the groundhogs and their predictions. This data is from the January 30th enrty of the tidy-tuesday github page. 
+The datasets I will be looking at contain data on groundhogs day groundhogs and their predictions of whether winter will come or not. In the predictions df there is 1400+ entries of id (groundhog id), year, shadow (T or F), and details. Details is any extra writen info that could add context to the sighting of the shadow. The groudhogs df has 75 entries with the groundhogs ids, information on the groundhogs, and information on the city/region where the groundhog is "from". I'll be making some plots to look compare the groundhogs and their predictions. This data is from the January 30th enrty of the tidy-tuesday github page.
 
 ```{r}
 #| warning: false
 library(tidyverse)
 ```
 
-```{r}
+
 #| warning: false
 tuesdata <- tidytuesdayR::tt_load('2024-01-30')
 
 groundhogs <- tuesdata$groundhogs
 predictions <- tuesdata$predictions
+
+
+```{r}
+#| warning: false
+
+groundhogs <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2024/2024-01-30/groundhogs.csv')
+predictions <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2024/2024-01-30/predictions.csv')
 ```
+
 
 ```{r}
 #| warning: false

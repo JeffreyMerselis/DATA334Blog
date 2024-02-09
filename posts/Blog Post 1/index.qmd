@@ -2,13 +2,21 @@
 title: "Blog Post 1"
 author: "Jeffrey Merselis"
 date: "2024-2-9"
+categories: [code, analysis]
+toc: true
 ---
 
+# Introduction
+
+The datasets I will be looking at contain data on groundhogs day groundhogs and their predictions of whether winter will come or not. In the predictions df there is 1400+ entries of id (groundhog id), year, shadow (T or F), and details. Details is any extra writen info that could add context to the sighting of the shadow. The groudhogs df has 75 entries with the groundhogs ids, information on the groundhogs, and information on the city/region where the groundhog is "from". I'll be making some plots to look compare the groundhogs and their predictions. This data is from the January 30th enrty of the tidy-tuesday github page. 
+
 ```{r}
+#| warning: false
 library(tidyverse)
 ```
 
 ```{r}
+#| warning: false
 tuesdata <- tidytuesdayR::tt_load('2024-01-30')
 
 groundhogs <- tuesdata$groundhogs
@@ -16,7 +24,119 @@ predictions <- tuesdata$predictions
 ```
 
 ```{r}
+#| warning: false
 groundhogs
 predictions
 ```
 
+# Primary Visualizations
+
+## Groundhogs per Region
+
+```{r}
+per_region_df <- groundhogs|>
+  group_by(region)|>
+  summarise(n_hogs = n()) |>
+  arrange(desc(n_hogs)) |>
+  mutate(region = fct_reorder(region, n_hogs))
+```
+
+```{r}
+ggplot(data = per_region_df, aes(x = region, y = n_hogs)) +
+  geom_segment(aes(xend = region, yend = 0)) +
+  geom_point() + 
+  theme_minimal() +
+  coord_flip() +
+  labs(title = "Number of Groundhogs per Region",
+       x = "Region",
+       y = "Number of Groundhogs")
+```
+
+A graph of how many groundhogs each region has. Each entry in groundhogs is a unique groundhog, so this counts the number of times each region is entered. The Pennsylvania region has the most ground hogs by almost double the second most.  
+
+## Different Groundhogs
+
+```{r}
+type_plot <- groundhogs |>
+  group_by(type) |>
+  summarize(count = n()) |>
+  mutate(type = if_else(count == 1, true = "Other", false = type)) |>
+  group_by(type) |>
+  summarize(count = sum(count)) |>
+  arrange(desc(count)) |>
+  mutate(type = fct_reorder(type, count))
+```
+
+```{r}
+pie(type_plot$count, labels = type_plot$type, main = "Different Groundhogs")
+```
+
+This pie chart shows some of the other "animals" that have been used in place of real groundhogs, and how common the alternatives are. 
+
+## Shadows Seen vs. Not Seen
+
+```{r}
+predictions_noNA_df <- predictions |>
+  filter(!is.na(shadow))
+```
+
+```{r}
+ggplot(data = predictions_noNA_df, aes(x = shadow)) +
+  geom_bar() +
+  geom_text(stat = "count", aes(label = after_stat(count)), vjust = -0.5) + # AI*
+  labs(title = "Total Shadows Seen (True) vs. Not Seen (False)",
+       x = "",
+       y = "Count") +
+  theme_minimal()
+```
+
+This is a simple plot tallying the number of times a groundhog saw it's shadow, vs time a groundhog didn't see it's shadow. 
+
+* Into chatGPT: "In this plot put the number of each bar on the bar: (My code for the plot minus the geom_text line)"
+
+## Proportion of Shadows Seen vs. Not Seen
+
+```{r}
+#| warning: false
+
+shadow_prop <- predictions_noNA_df |>
+  group_by(year, shadow) |>
+  summarise(n_predictions = n()) |>
+  filter(n_predictions > 1) |>
+  ungroup() |>
+  arrange(desc(year)) |>
+  pivot_wider(names_from = shadow, values_from = n_predictions) 
+
+shadow_prop[is.na(shadow_prop)] <- 0 # AI*
+
+shadow_prop <- shadow_prop |>
+  mutate(n = `FALSE` + `TRUE`) |>
+  filter(n >= 10) |>
+  mutate(samp_prop = `TRUE` / n,
+         se = sqrt(samp_prop * (1 - samp_prop) / n),
+         lb = samp_prop - se,
+         ub = samp_prop + se)
+```
+
+* Into chatGPT: "Give code in r to re-write an NA input to 0."
+
+```{r}
+ggplot(data = shadow_prop, aes(x = year, y = samp_prop)) +
+  geom_errorbar(aes(ymin = lb, ymax = ub)) +
+  geom_point() +
+  labs(title = "Proportion of Shadows Seen vs. Not Seen",
+       subtitle = "(For years with over 10 observations by groundhogs)",
+       x = "Year",
+       y = "Proportion") +
+  theme_minimal()
+```
+
+This plot shows the proportion of seen vs not seen shadows for years where 10 or more groundhogs observed their shadow. It seems that the groundhogs have started to disagree more in recent years but the standard deviation is getting smaller, this is probably because more groundhogs observe in recent years then early in the 90s and 2000s. 
+
+# Conclusion and Wrap-Up
+
+I know the pie chart is the weakest plot. I would have liked to 1) add the count into each slice, and 2) listed all the "Other" groundhogs, but the easiest way to make a pie chart I found was the pie() function, but I never figured out how to add text onto each slice. I also wish there had been data on if the groundhogs had been right or wrong but it wasn't provided. 
+
+# Connection to Class Ideas
+
+The final plot is the same as the tattoo example we did in class and I'm a big fan of the error_bar() plots. I hope that I will use it in future blog posts too. I think that my graphs are good at portraying data in a simple and understandable way, and I have learned more about when is the best time to use different plots to convey different ideas. 

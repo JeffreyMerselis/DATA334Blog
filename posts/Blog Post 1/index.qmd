@@ -15,21 +15,11 @@ The datasets I will be looking at contain data on groundhogs day groundhogs and 
 library(tidyverse)
 ```
 
-
-#| warning: false
-tuesdata <- tidytuesdayR::tt_load('2024-01-30')
-
-groundhogs <- tuesdata$groundhogs
-predictions <- tuesdata$predictions
-
-
 ```{r}
 #| warning: false
-
 groundhogs <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2024/2024-01-30/groundhogs.csv')
 predictions <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2024/2024-01-30/predictions.csv')
 ```
-
 
 ```{r}
 #| warning: false
@@ -60,7 +50,7 @@ ggplot(data = per_region_df, aes(x = region, y = n_hogs)) +
        y = "Number of Groundhogs")
 ```
 
-A graph of how many groundhogs each region has. Each entry in groundhogs is a unique groundhog, so this counts the number of times each region is entered. The Pennsylvania region has the most ground hogs by almost double the second most.  
+A graph of how many groundhogs each region has. Each entry in groundhogs is a unique groundhog, so this counts the number of times each region is entered. The Pennsylvania region has the most ground hogs by almost double the second most.
 
 ## Different Groundhogs
 
@@ -79,7 +69,7 @@ type_plot <- groundhogs |>
 pie(type_plot$count, labels = type_plot$type, main = "Different Groundhogs")
 ```
 
-This pie chart shows some of the other "animals" that have been used in place of real groundhogs, and how common the alternatives are. 
+This pie chart shows some of the other "animals" that have been used in place of real groundhogs, and how common the alternatives are.
 
 ## Shadows Seen vs. Not Seen
 
@@ -98,9 +88,9 @@ ggplot(data = predictions_noNA_df, aes(x = shadow)) +
   theme_minimal()
 ```
 
-This is a simple plot tallying the number of times a groundhog saw it's shadow, vs time a groundhog didn't see it's shadow. 
+This is a simple plot tallying the number of times a groundhog saw it's shadow, vs time a groundhog didn't see it's shadow.
 
-* Into chatGPT: "In this plot put the number of each bar on the bar: (My code for the plot minus the geom_text line)"
+-   Into chatGPT: "In this plot put the number of each bar on the bar: (My code for the plot minus the geom_text line)"
 
 ## Proportion of Shadows Seen vs. Not Seen
 
@@ -126,7 +116,7 @@ shadow_prop <- shadow_prop |>
          ub = samp_prop + se)
 ```
 
-* Into chatGPT: "Give code in r to re-write an NA input to 0."
+-   Into chatGPT: "Give code in r to re-write an NA input to 0."
 
 ```{r}
 ggplot(data = shadow_prop, aes(x = year, y = samp_prop)) +
@@ -139,12 +129,12 @@ ggplot(data = shadow_prop, aes(x = year, y = samp_prop)) +
   theme_minimal()
 ```
 
-This plot shows the proportion of seen vs not seen shadows for years where 10 or more groundhogs observed their shadow. It seems that the groundhogs have started to disagree more in recent years but the standard deviation is getting smaller, this is probably because more groundhogs observe in recent years then early in the 90s and 2000s. 
+This plot shows the proportion of seen vs not seen shadows for years where 10 or more groundhogs observed their shadow. It seems that the groundhogs have started to disagree more in recent years but the standard deviation is getting smaller, this is probably because more groundhogs observe in recent years then early in the 90s and 2000s.
 
 # Conclusion and Wrap-Up
 
-I know the pie chart is the weakest plot. I would have liked to 1) add the count into each slice, and 2) listed all the "Other" groundhogs, but the easiest way to make a pie chart I found was the pie() function, but I never figured out how to add text onto each slice. I also wish there had been data on if the groundhogs had been right or wrong but it wasn't provided. 
+I know the pie chart is the weakest plot. I would have liked to 1) add the count into each slice, and 2) listed all the "Other" groundhogs, but the easiest way to make a pie chart I found was the pie() function, but I never figured out how to add text onto each slice. I also wish there had been data on if the groundhogs had been right or wrong but it wasn't provided.
 
 # Connection to Class Ideas
 
-The final plot is the same as the tattoo example we did in class and I'm a big fan of the error_bar() plots. I hope that I will use it in future blog posts too. I think that my graphs are good at portraying data in a simple and understandable way, and I have learned more about when is the best time to use different plots to convey different ideas. 
+The final plot is the same as the tattoo example we did in class and I'm a big fan of the error_bar() plots. I hope that I will use it in future blog posts too. I think that my graphs are good at portraying data in a simple and understandable way, and I have learned more about when is the best time to use different plots to convey different ideas.

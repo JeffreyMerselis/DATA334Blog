@@ -1,0 +1,50 @@
+---
+title: "Blog Post 2 - Valentine's Day Consumer Data"
+author: "Jeffrey Merselis"
+date: "2024-2-23"
+categories: [code, analysis]
+toc: true
+---
+
+scale_fill_gradient2(low = "blue", mid = "grey", high = "red", )
+
+# Introduction
+
+This is a dataset form the Tidy Tuesday Github about Valentine's Day consumers. There are three datasets, historical_spending, gifts_age, and gifts_gender. historical_spending is data on the money spent on Valentine's Day gifts from 2010 to 2022. Year is the year, PercentCelebrating is the percent of people celebrating, and all the other columns is the average amount of money spent by people on that item. gifts_age has data on how much money different age groups are spending on Valentine's Day, and how much they spend on what items. Age is the age range, SpendingCelebrating is the percent of that group that is spending money on, or is celebrating, Valentines Day, the other columns are the average percent spending money on that item. gifts_gender is data on men's vs womens' spending on Valentine's Day. The columns are the same as gifts_age, except the age column is replaces with gender.
+
+Ill be making some plots to show a comparison between each datasets main focus (over time, between different age groups, and by gender) and examine how spending changes. 
+
+Data Source: <https://github.com/rfordatascience/tidytuesday/blob/master/data/2024/2024-02-13/readme.md>
+
+```{r}
+#| warning: false
+library(tidyverse)
+```
+
+```{r}
+#| warning: false
+historical_spending <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2024/2024-02-13/historical_spending.csv')
+gifts_age <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2024/2024-02-13/gifts_age.csv')
+gifts_gender <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2024/2024-02-13/gifts_gender.csv')
+```
+
+```{r}
+historical_spending
+gifts_age
+gifts_gender
+```
+
+# Primary Visualizations
+
+```{r}
+toy_df <- historical_spending |>
+  mutate(Year = fct_recode(as.factor(Year)))
+
+ggplot(data = toy_df, aes(x = Year, y = PercentCelebrating)) +
+  geom_point()
+```
+
+# Conclusion and Wrap-Up
+
+# Connection to Class Ideas
+

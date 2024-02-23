@@ -8,7 +8,13 @@ toc: true
 
 # Introduction
 
-This is a dataset form the Tidy Tuesday Github about Valentine's Day consumers. There are three datasets, historical_spending, gifts_age, and gifts_gender. historical_spending is data on the money spent on Valentine's Day gifts from 2010 to 2022. Year is the year, PercentCelebrating is the percent of people celebrating, and all the other columns is the average amount of money spent by people on that item. gifts_age has data on how much money different age groups are spending on Valentine's Day, and how much they spend on what items. Age is the age range, SpendingCelebrating is the percent of that group that is spending money on, or is celebrating, Valentines Day, the other columns are the average percent spending money on that item. gifts_gender is data on men's vs womens' spending on Valentine's Day. The columns are the same as gifts_age, except the age column is replaces with gender.
+This is a dataset form the Tidy Tuesday Github about Valentine's Day consumers. There are three datasets, historical_spending, gifts_age, and gifts_gender. 
+
+historical_spending is data on the money spent on Valentine's Day gifts from 2010 to 2022. Year is the year, PercentCelebrating is the percent of people celebrating, and all the other columns is the average amount of money spent by people on that item. 
+
+gifts_age has data on how much money different age groups are spending on Valentine's Day, and how much they spend on what items. Age is the age range, SpendingCelebrating is the percent of that group that is spending money on, or is celebrating, Valentines Day, the other columns are the average percent spending money on that item. 
+
+gifts_gender is data on men's vs womens' spending on Valentine's Day. The columns are the same as gifts_age, except the age column is replaces with gender.
 
 Ill be making some plots to show a comparison between each datasets main focus (over time, between different age groups, and by gender) and examine how spending changes. 
 
@@ -34,17 +40,87 @@ gifts_gender
 
 # Primary Visualizations
 
-```{r}
-toy_df <- historical_spending |>
-  mutate(Year = fct_recode(as.factor(Year)))
+Here are three different graphs to show the change in the percentage of people celebrating Valentine's Day over the years (2010 - 2022). Each shows that although the percentage fluctuates somewhat, it generally has been decreasing.
 
-ggplot(data = toy_df, aes(x = Year, y = PercentCelebrating)) +
-  geom_point()
+```{r}
+ggplot(historical_spending, aes(x = Year, y = PercentCelebrating)) +
+  geom_col(fill = "blue") +
+  labs(title = "Percentage of People Celebrating Valentine's Day",
+       subtitle = "From 2010 to 2022",
+       x = "Year",
+       y = "Percentage Celebrating") +
+  theme_minimal()
+```
+  
+```{r}
+ggplot(historical_spending, aes(x = Year, y = PercentCelebrating)) +
+  geom_line(color = "blue", size = 1.5) + 
+  ylim(48, 63) + 
+  labs(title = "Percentage of People Celebrating Valentine's Day",
+       subtitle = "From 2010 to 2022",
+       x = "Year",
+       y = "Percentage Celebrating") +
+  theme_minimal()
 ```
 
-scale_fill_gradient2(low = "blue", mid = "grey", high = "red", )
+This scatter plot and smoother best represent the change in the percentage of those who are celebrating.
+
+```{r}
+ggplot(historical_spending, aes(x = as.Date(historical_spending$Year), y = PercentCelebrating)) +
+  geom_point(color = "blue") +
+  geom_smooth(color = "skyblue") +
+  labs(title = "Percentage of People Celebrating Valentine's Day",
+       subtitle = "From 2010 to 2022",
+       x = "Year",
+       y = "Percentage Celebrating") +
+  theme_minimal()
+```
+
+```{r}
+historical_spending_long <- historical_spending |>
+  select(-PerPerson, -PercentCelebrating) |>
+  pivot_longer(cols = -Year,
+             names_to = "Category",
+             values_to = "Spending")
+```
+
+This is a graph of the average amount of money people spent on each of the gifts in the data set over the years. One interesting thing about this graph is the sharp drop in "EveningOut" from 2020 to 2021, of course, when Covid was keeping everyone in their homes! It seems for some reason it also affected jewelry purchases. Considering that outlier of a year, it's also interesting to see that while the percentage of people celebrating is dropping (graphs above), the amount that those who are celebrating spent is increasing over the years.
+
+```{r}
+ggplot(historical_spending_long, aes(x = Year, y = Spending, color = Category)) +
+  geom_line(size = 1.5) +
+  labs(title = "Average Amount Spent on Gifts Over the Years",
+       subtitle = "From 2010 to 2022",
+       x = "Year",
+       y = "Average Amount of Money Spent") +
+  theme_minimal()
+```
+
+```{r}
+gifts_gender_long <- gifts_gender |> 
+  select(-SpendingCelebrating) |>
+  pivot_longer(cols = -Gender,
+               names_to = "gift",
+               values_to = "spent")
+```
+
+This is a plot of the spending habits of men vs. women. The y-axis represents the proportion of men/women who said that they did purchase that gift for their partner on Valentine's Day, NOT the average amount spent on those items. 
+
+```{r}
+ggplot(gifts_gender_long, aes(x = gift, y = spent, fill = Gender)) +
+  geom_col(position = position_dodge()) +
+  labs(title = "Gift Purchasing Habits, Male vs. Female",
+       x = "Gift",
+       y = "Proportion",
+       fill = "Gender") +
+  scale_fill_manual(values = c("skyblue", "pink")) + 
+  theme_minimal()
+```
 
 # Conclusion and Wrap-Up
 
+The data I selected might be a bit limited in showing more in-depth changes in gender and age from year to year, but still has interesting data on the overall spending habits of people. It could have been interesting to see if there were any changes in what different age groups or genders were buying from 2010 to 2022. I think something I could have included was some sort of comparison between 2020-2021 and the average of the other years or something, after realizing there was a visible effect of Covid in the gift-giving graph.
+
 # Connection to Class Ideas
 
+I think I've done a good job of selecting the correct types of graphs for each topic I've chosen. I think I would like to get better at visualizing linear models as I didn't include anything related to that because I was confused and did not do it right when I tried.

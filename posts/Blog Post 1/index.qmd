@@ -1,5 +1,5 @@
 ---
-title: "Blog Post 1"
+title: "Blog Post 1 - Groundhogs Day Data"
 author: "Jeffrey Merselis"
 date: "2024-2-9"
 categories: [code, analysis]

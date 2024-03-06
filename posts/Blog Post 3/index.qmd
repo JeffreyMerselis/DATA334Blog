@@ -14,6 +14,8 @@ toc: true
 * where did you get the data from? (If possible, give a link to the data source).
 * what other pieces of context are important to explain to the reader?
 
+Source: <https://github.com/rfordatascience/tidytuesday/blob/master/data/2024/2024-03-05/readme.md>
+
 ```{r}
 #| warning: false
 library(tidyverse)

@@ -1,0 +1,313 @@
+---
+title: "334 Final Project - Alone Data"
+author: "Jeffrey Merselis"
+date: "2024-3-8"
+categories: [code, analysis]
+toc: true
+---
+
+Final Project GitHub Repository: <https://github.com/JeffreyMerselis/ds334_final_project>
+
+```{r}
+#| echo: false
+#| output: false
+#| warning: false
+library(tidyverse)
+library(shiny)
+
+survivalists <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2023/2023-01-24/survivalists.csv')
+loadouts <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2023/2023-01-24/loadouts.csv')
+episodes <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2023/2023-01-24/episodes.csv')
+seasons <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2023/2023-01-24/seasons.csv')
+```
+
+This post provides a summary of the findings from a Shiny app that visualizes data from the TV show "Alone." The app includes three distinct plots that examine the relationship between contestants' ages and their survival duration on the show; the loadouts that contestants brought and how these contributed to  their success; and how the performance of contestants in each placement compared with the average for that placement across the series. 
+
+An analysis of these plots reveals that certain items, such as sleeping bags, axes, firestarters, and pots, consistently contribute to success. Paracord and bows and arrows began gaining traction in later seasons as contestants refined their loadouts, leading to greater uniformity across all 10 survivalists.
+
+Initially, I expected age to be a significant factor in determining a contestant's success on the show, but the data indicates otherwise. There's a wide range of ages among both successful and unsuccessful contestants, suggesting that age has a minimal impact on outcomes.
+
+Another observation is the steady increase in the average number of days participants spend surviving in later seasons. Early seasons required fewer days to secure a victory, while the final three seasons demonstrated much longer survival durations needed for success. 
+
+# Introduction
+
+In this project, I examined three datasets from the TV show "Alone." My goal was to explore the successes and failures of contestants on the show to identify the factors that made some contestants more successful than others at surviving for long periods in the wilderness alone. My first step was to analyze the items contestants chose to bring with them, aiming to discover which items were most and least important in relation for long periods of survival. I wanted to understand if there was a pattern in the gear used by winners versus losers, and if there were any underrated or overrated items that less or more successful survivalists overlooked. I also wanted to examine how certain characteristics, like age, might affect survival duration. I chose age because I thought it could be a key factor in success. Additionally, I tracked each contestant's performance across the season compared to the overall series average. My assumption was that contestants in later seasons might learn from previous ones, improving their outcomes.
+
+To create the graphs for the Shiny app, I used three datasets. The first was "Survivalists," which contained information on each contestant throughout the nine seasons, including age, gender, hometown, days lasted, reason for leaving (if they didn't win), and profession. This dataset had 94 entries across 16 columns, with all seasons having 10 contestants except for season four, which had 14 contestants in teams of two. The second dataset, "Loadout," detailed the 10 items each of the 94 contestants brought with them during their time on the show. This dataset had 940 entries with six columns. The final dataset, "Seasons," contained brief information about each season, such as the filming location, country, latitude and longitude of the drop-off points, start dates, and the number of contestants in each season. There was a fourth dataset, "Episodes," which I didn't use, that contained information about each episode, including viewership, IMDB ratings, titles, premiere dates, and the episode's order within the season and overall series. Although this dataset wasn't used, it could be a valuable resource for additional analysis in the future.
+
+# Winning Loadouts
+
+While analyzing the loadouts from all nine seasons, I observed a trend of the contrestants narrowing down the best items to bring over time. Some items remained consistently popular from season one through season nine, while others found their place in later seasons, eventually becoming staples in successful loadouts. Items like sleeping bags, axes, pots, and firestarters were consistently used, with very few contestants finding success without them. In fact, almost no winners brought fewer than three of these essential items. Some items that seemed promising early on, like gilnets, eventually lost popularity, while others, such as bows and arrows and paracord, gained traction around the middle of the series and became standard in contestants' loadouts by season nine, regardless of whether they won or lost. This shift in item choices reflects an evolution in survival strategies as contestants adapted to the changing demands of the show and aimed to maximize their chances of success.
+
+```{r}
+#| echo: false
+filtered_season <- 1
+
+winner <- survivalists |>
+  filter(season == filtered_season, result == 1) |>
+  select(name) |> 
+  pull()
+
+winner_items <- loadouts |>
+  filter(season == filtered_season, name == winner) |>
+  select(item) |>
+  pull()
+
+unique_loadouts <- loadouts |>
+  filter(season == filtered_season) |>
+  distinct(name, item)
+
+other_items_count <- unique_loadouts |>
+  group_by(item) |>
+  summarize(count = n()) |>
+  mutate(brought_by_winner = item %in% winner_items, 
+         color = ifelse(brought_by_winner, "blue", "red")) |>
+  arrange(desc(count)) |>
+  mutate(item = fct_reorder(item, count)) 
+
+ggplot(other_items_count) +
+  geom_segment(aes(x = item, y = count, xend = item, yend = 0, color = brought_by_winner)) +
+  geom_point(aes(x = item, y = count, color = brought_by_winner)) +
+  scale_color_manual(values = c("TRUE" = "blue", "FALSE" = "red")) + 
+  theme_minimal() +
+  scale_y_continuous(breaks = seq(0, max(other_items_count$count), by = 2)) + #GPT
+  coord_flip() +
+  labs(title = "Season 1",
+       x = "Item",
+       y = "Count",
+       color = "Brought by Winner")
+```
+
+```{r}
+#| echo: false
+filtered_season <- 5
+
+winner <- survivalists |>
+  filter(season == filtered_season, result == 1) |>
+  select(name) |> 
+  pull()
+
+winner_items <- loadouts |>
+  filter(season == filtered_season, name == winner) |>
+  select(item) |>
+  pull()
+
+unique_loadouts <- loadouts |>
+  filter(season == filtered_season) |>
+  distinct(name, item)
+
+other_items_count <- unique_loadouts |>
+  group_by(item) |>
+  summarize(count = n()) |>
+  mutate(brought_by_winner = item %in% winner_items, 
+         color = ifelse(brought_by_winner, "blue", "red")) |>
+  arrange(desc(count)) |>
+  mutate(item = fct_reorder(item, count)) 
+
+ggplot(other_items_count) +
+  geom_segment(aes(x = item, y = count, xend = item, yend = 0, color = brought_by_winner)) +
+  geom_point(aes(x = item, y = count, color = brought_by_winner)) +
+  scale_color_manual(values = c("TRUE" = "blue", "FALSE" = "red")) + 
+  theme_minimal() +
+  scale_y_continuous(breaks = seq(0, max(other_items_count$count), by = 2)) + #GPT
+  coord_flip() +
+  labs(title = "Season 5",
+       x = "Item",
+       y = "Count",
+       color = "Brought by Winner")
+```
+
+```{r}
+#| echo: false
+filtered_season <- 9
+
+winner <- survivalists |>
+  filter(season == filtered_season, result == 1) |>
+  select(name) |> 
+  pull()
+
+winner_items <- loadouts |>
+  filter(season == filtered_season, name == winner) |>
+  select(item) |>
+  pull()
+
+unique_loadouts <- loadouts |>
+  filter(season == filtered_season) |>
+  distinct(name, item)
+
+other_items_count <- unique_loadouts |>
+  group_by(item) |>
+  summarize(count = n()) |>
+  mutate(brought_by_winner = item %in% winner_items, 
+         color = ifelse(brought_by_winner, "blue", "red")) |>
+  arrange(desc(count)) |>
+  mutate(item = fct_reorder(item, count)) 
+
+ggplot(other_items_count) +
+  geom_segment(aes(x = item, y = count, xend = item, yend = 0, color = brought_by_winner)) +
+  geom_point(aes(x = item, y = count, color = brought_by_winner)) +
+  scale_color_manual(values = c("TRUE" = "blue", "FALSE" = "red")) + 
+  theme_minimal() +
+  scale_y_continuous(breaks = seq(0, max(other_items_count$count), by = 2)) + #GPT
+  coord_flip() +
+  labs(title = "Season 9",
+       x = "Item",
+       y = "Count",
+       color = "Brought by Winner")
+```
+
+# Days Survived, and Age
+
+When analyzing the relationship between age and survival time, I initially thought age would play a significant role in determining contestants' success. My assumption was that either older, more experienced contestants or younger, fitter participants would have an advantage. However, the data revealed that age had minimal impact on contestant success. Although there was a slight trend indicating that younger contestants (under 30) were less successful, this could be due to the small sample size of contestants in that age group. Despite this, there was still a winner from this demographic and others who performed well.
+
+As for overall success across the seasons, it became apparent that survivalists were improving in their ability to endure longer periods in the wilderness. This is evident from season seven, where a contestant lasted 100 days—significantly longer than the second-place finisher, which was unusual since the goal is to be the last one standing, not to remain in the wilderness longer than necessary. This growth in survival skills over the seasons was intriguing, especially when comparing season one with season nine. Contestants from season nine or season seven would have easily won in season one based on the survival time they demonstrated. This progression showcases the evolution of the show's participants, reflecting increased experience and knowledge as the series developed.
+
+```{r}
+#| echo: false
+days_df <- survivalists |>
+  mutate(won = ifelse(result == 1, TRUE, FALSE)) |>
+  select(days_lasted, age, won)
+
+ggplot(days_df, aes(x = days_lasted, y = age, color = won)) +
+  geom_point(size = 3) + 
+  labs(
+    title = "Age vs. Days",
+    x = "Age",
+    y = "Days Lasted",
+    color = "Won"
+  ) +
+  scale_color_manual(values = c("red", "blue")) +  
+  theme_minimal() 
+```
+
+```{r}
+#| echo: false
+
+filtered_season <- 1
+
+days_df <- survivalists |>
+  filter(season == filtered_season) |>
+  mutate(won = ifelse(result == 1, TRUE, FALSE)) |>
+  select(days_lasted, age, won)
+
+ggplot(days_df, aes(x = days_lasted, y = age, color = won)) +
+  geom_point(size = 3) + 
+  labs(
+    title = "Age vs. Days Season 1",
+    x = "Age",
+    y = "Days Lasted",
+    color = "Won"
+  ) +
+  scale_color_manual(values = c("red", "blue")) +  
+  theme_minimal() 
+
+season_days <- survivalists |>
+  filter(season == filtered_season)
+
+average_days <- survivalists |>
+  group_by(result) |>
+  summarize(average_days_lasted = mean(days_lasted))
+
+ggplot() +
+  geom_line(data = season_days, aes(x = result, y = days_lasted), 
+            color = "blue", size = 1) +
+  geom_point(data = season_days, aes(x = result, y = days_lasted), 
+             color = "blue", size = 2.5) + 
+  geom_line(data = average_days, aes(x = result, y = average_days_lasted), 
+            color = "red", size = 1) +
+  geom_point(data = average_days, aes(x = result, y = average_days_lasted), 
+             color = "red", size = 2.5) +
+  labs(
+    title = "Average Days Series vs Season Season 1",
+    x = "Placement",
+    y = "Days Lasted") +
+  theme_minimal()
+```
+
+```{r}
+#| echo: false
+
+filtered_season <- 7
+
+days_df <- survivalists |>
+  filter(season == filtered_season) |>
+  mutate(won = ifelse(result == 1, TRUE, FALSE)) |>
+  select(days_lasted, age, won)
+
+ggplot(days_df, aes(x = days_lasted, y = age, color = won)) +
+  geom_point(size = 3) + 
+  labs(
+    title = "Age vs. Days Season 7",
+    x = "Age",
+    y = "Days Lasted",
+    color = "Won"
+  ) +
+  scale_color_manual(values = c("red", "blue")) +  
+  theme_minimal() 
+
+season_days <- survivalists |>
+  filter(season == filtered_season)
+
+average_days <- survivalists |>
+  group_by(result) |>
+  summarize(average_days_lasted = mean(days_lasted))
+
+ggplot() +
+  geom_line(data = season_days, aes(x = result, y = days_lasted), 
+            color = "blue", size = 1) +
+  geom_point(data = season_days, aes(x = result, y = days_lasted), 
+             color = "blue", size = 2.5) + 
+  geom_line(data = average_days, aes(x = result, y = average_days_lasted), 
+            color = "red", size = 1) +
+  geom_point(data = average_days, aes(x = result, y = average_days_lasted), 
+             color = "red", size = 2.5) +
+  labs(
+    title = "Average Days Series vs Season Season 7",
+    x = "Placement",
+    y = "Days Lasted") +
+  theme_minimal()
+```
+
+```{r}
+#| echo: false
+
+filtered_season <- 9
+
+days_df <- survivalists |>
+  filter(season == filtered_season) |>
+  mutate(won = ifelse(result == 1, TRUE, FALSE)) |>
+  select(days_lasted, age, won)
+
+ggplot(days_df, aes(x = days_lasted, y = age, color = won)) +
+  geom_point(size = 3) + 
+  labs(
+    title = "Age vs. Days Season 9",
+    x = "Age",
+    y = "Days Lasted",
+    color = "Won"
+  ) +
+  scale_color_manual(values = c("red", "blue")) +  
+  theme_minimal() 
+
+season_days <- survivalists |>
+  filter(season == filtered_season)
+
+average_days <- survivalists |>
+  group_by(result) |>
+  summarize(average_days_lasted = mean(days_lasted))
+
+ggplot() +
+  geom_line(data = season_days, aes(x = result, y = days_lasted), 
+            color = "blue", size = 1) +
+  geom_point(data = season_days, aes(x = result, y = days_lasted), 
+             color = "blue", size = 2.5) + 
+  geom_line(data = average_days, aes(x = result, y = average_days_lasted), 
+            color = "red", size = 1) +
+  geom_point(data = average_days, aes(x = result, y = average_days_lasted), 
+             color = "red", size = 2.5) +
+  labs(
+    title = "Average Days Series vs Season Season 9",
+    x = "Placement",
+    y = "Days Lasted") +
+  theme_minimal()
+```

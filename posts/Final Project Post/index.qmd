@@ -311,3 +311,4 @@ ggplot() +
     y = "Days Lasted") +
   theme_minimal()
 ```
+
